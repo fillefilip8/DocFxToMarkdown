@@ -1,5 +1,8 @@
 name: 'DocFxToMarkdown'
 description: 'Converts DocFx metadata into markdown files'
+branding:
+  icon: book
+  color: gray-dark
 inputs:
   input-folder:
     description: 'DocFX metadata folder'
