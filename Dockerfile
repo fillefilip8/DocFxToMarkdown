@@ -1,18 +1,9 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0 as build-env
+
 WORKDIR /app
+COPY . ./
+RUN dotnet publish ./DocFxToMarkdown/DocFxToMarkdown.csproj -c Release -o out --no-self-contained
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
-COPY ["DocFxToMarkdown/DocFxToMarkdown.csproj", "DocFxToMarkdown/"]
-RUN dotnet restore "DocFxToMarkdown/DocFxToMarkdown.csproj"
-COPY . .
-WORKDIR "/src/DocFxToMarkdown"
-RUN dotnet build "DocFxToMarkdown.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "DocFxToMarkdown.csproj" -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "DocFxToMarkdown.dll"]
+FROM mcr.microsoft.com/dotnet/runtime:6.0
+COPY --from=build-env /app/out .
+ENTRYPOINT [ "dotnet", "/DocFxToMarkdown.dll" ]
