@@ -1,0 +1,21 @@
+name: 'DocFxToMarkdown'
+description: 'Converts DocFx metadata into markdown files'
+branding:
+  icon: book
+  color: gray-dark
+inputs:
+  input-folder:
+    description: 'DocFX metadata folder'
+    required: true
+  output-folder:
+    description: 'Markdown output folder'
+    required: true
+outputs:
+  time: # id of output
+    description: 'The time we greeted you'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - --input ${{ inputs.input-folder }}
+    - --output ${{ inputs.output-folder }}
