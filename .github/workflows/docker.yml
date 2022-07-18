@@ -36,6 +36,6 @@ jobs:
       #- name: Run gitversion
       #  run: dotnet tool install --global GitVersion.Tool --version 5.* && dotnet gitversion
       - name: Run './build.cmd BuildDocker'
-        run: ./build.cmd --verbosity verbose
+        run: ./build.cmd BuildDocker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
