@@ -250,8 +250,8 @@ generateCommand.AddOption(outputDirOption);
 
 generateCommand.SetHandler(async (input, output) =>
     {
-        Console.WriteLine(input);
-        Console.WriteLine(output);
+        Console.WriteLine("Input Folder: " + input);
+        Console.WriteLine("Output Folder: " + output);
 
         foreach (var dir in Directory.GetDirectories(output.FullName))
         {
