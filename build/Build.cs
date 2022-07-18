@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
@@ -10,9 +11,11 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
+using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
+using Octokit.Internal;
 using Serilog;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -39,7 +42,7 @@ class Build : NukeBuild
         return Execute<Build>(x => x.BuildDocker);
     }
 
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
+    [Nuke.Common.Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
     
     [GitRepository] readonly GitRepository Repository;
@@ -71,7 +74,7 @@ class Build : NukeBuild
     Target DeployDocker => _ => _
         .TriggeredBy(BuildDocker)
         .OnlyWhenDynamic(() => Configuration == Configuration.Release)
-        .Executes(() =>
+        .Executes(async () =>
         {
             DockerTasks.DockerLogin(settings =>
             {
@@ -88,6 +91,27 @@ class Build : NukeBuild
                 .SetTargetImage(target));
 
             DockerTasks.DockerImagePush(x => x.SetName(target));
+            
+            var credentials = new Credentials(GitHubActions.Instance.Token);
+            GitHubTasks.GitHubClient = new GitHubClient(
+                new ProductHeaderValue(nameof(NukeBuild)),
+                new InMemoryCredentialStore(credentials));
+            
+            var newRelease = new NewRelease(GitVersion.SemVer)
+            {
+                TargetCommitish = Repository.Commit,
+                Draft = false,
+                Name = GitVersion.SemVer,
+                Prerelease = !Repository.IsOnMainOrMasterBranch(),
+                Body = ""
+            };
+
+            var repoName = GitHubActions.GitHubEvent.Value<JObject>("repository").Value<string>("name");
+
+            Log.Information("Repo Owner: {RepoOwner}", GitHubActions.RepositoryOwner);
+            Log.Information("Repo Name: {RepoName}", repoName);
+
+            await GitHubTasks.GitHubClient.Repository.Release.Create(GitHubActions.RepositoryOwner, repoName, newRelease);
         });
 
     /*Target Release => _ => _
