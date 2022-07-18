@@ -50,6 +50,7 @@ class Build : NukeBuild
     readonly Solution Solution;
     
     [GitVersion(Framework = "net6.0")]
+    [Required]
     readonly GitVersion GitVersion;
 
     public string ProjectName => Solution.Name == null ? "project" : Solution.Name.ToLower();
