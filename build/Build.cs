@@ -10,6 +10,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Docker;
+using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
 using Serilog;
@@ -42,6 +43,9 @@ class Build : NukeBuild
     
     [Solution]
     readonly Solution Solution;
+    
+    [GitVersion]
+    readonly GitVersion GitVersion;
 
     public string ProjectName => Solution.Name == null ? "project" : Solution.Name.ToLower();
 
@@ -55,7 +59,7 @@ class Build : NukeBuild
                     .AddTag($"{ProjectName}:{Repository.Commit}");
             });
         });
-    
+
     Target DeployDocker => _ => _
         .TriggeredBy(BuildDocker)
         .OnlyWhenDynamic(() => Configuration == Configuration.Release)
@@ -73,6 +77,21 @@ class Build : NukeBuild
 
             DockerTasks.DockerImageTag(x => x
                 .SetSourceImage($"{ProjectName}:{Repository.Commit}")
+                .SetTargetImage(target));
+
+            DockerTasks.DockerImagePush(x => x.SetName(target));
+        });
+
+    Target Release => _ => _
+        .TriggeredBy(DeployDocker)
+        .OnlyWhenDynamic(() => Repository.IsOnMainOrMasterBranch())
+        .Executes(() =>
+        {
+            var source = $"ghcr.io/{GitHubActions.Repository}:{Repository.Commit}".ToLower();
+            var target = $"ghcr.io/{GitHubActions.Repository}:v{GitVersion.SemVer}".ToLower();
+
+            DockerTasks.DockerImageTag(x => x
+                .SetSourceImage(source)
                 .SetTargetImage(target));
 
             DockerTasks.DockerImagePush(x => x.SetName(target));
