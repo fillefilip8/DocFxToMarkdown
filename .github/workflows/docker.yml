@@ -31,6 +31,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
+      - name: Run gitversion
+        run: dotnet /usr/bin/dotnet/home/runner/.nuget/packages/gitversion.tool/5.10.3/tools/net6.0/any/gitversion.dll /nocache
       - name: Run './build.cmd BuildDocker'
         run: ./build.cmd --verbosity verbose
         env:
