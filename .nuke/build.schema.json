@@ -73,8 +73,7 @@
             "type": "string",
             "enum": [
               "BuildDocker",
-              "DeployDocker",
-              "Release"
+              "DeployDocker"
             ]
           }
         },
@@ -89,8 +88,7 @@
             "type": "string",
             "enum": [
               "BuildDocker",
-              "DeployDocker",
-              "Release"
+              "DeployDocker"
             ]
           }
         },
