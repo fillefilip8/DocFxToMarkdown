@@ -52,6 +52,8 @@ class Build : NukeBuild
     Target BuildDocker => _ => _
         .Executes(() =>
         {
+            Log.Information("Commit Hash: {Hash}", Repository.Commit);
+            Log.Information("SemVer: {SemVer}", GitVersion.SemVer);
             DockerTasks.DockerBuild(settings =>
             {
                 return settings
@@ -73,7 +75,7 @@ class Build : NukeBuild
                     .SetPassword(GitHubActions.Token);
             });
             
-            var target = $"ghcr.io/{GitHubActions.Repository}:{Repository.Commit}".ToLower();
+            var target = $"ghcr.io/{GitHubActions.Repository}:{GitVersion.SemVer}".ToLower();
 
             DockerTasks.DockerImageTag(x => x
                 .SetSourceImage($"{ProjectName}:{Repository.Commit}")
@@ -82,7 +84,8 @@ class Build : NukeBuild
             DockerTasks.DockerImagePush(x => x.SetName(target));
         });
 
-    Target Release => _ => _
+    /*Target Release => _ => _
+        .After(DeployDocker)
         .TriggeredBy(DeployDocker)
         .OnlyWhenDynamic(() => Repository.IsOnMainOrMasterBranch())
         .Executes(() =>
@@ -95,5 +98,5 @@ class Build : NukeBuild
                 .SetTargetImage(target));
 
             DockerTasks.DockerImagePush(x => x.SetName(target));
-        });
+        });*/
 }
