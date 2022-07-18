@@ -88,7 +88,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             var source = $"ghcr.io/{GitHubActions.Repository}:{Repository.Commit}".ToLower();
-            var target = $"ghcr.io/{GitHubActions.Repository}:v{GitVersion.SemVer}".ToLower();
+            var target = $"ghcr.io/{GitHubActions.Repository}:{GitVersion.SemVer}".ToLower();
 
             DockerTasks.DockerImageTag(x => x
                 .SetSourceImage(source)
