@@ -232,6 +232,90 @@ async Task<string> TryGenerateLink(string name, bool isHtml = false, bool cleanu
     return cleanup ? string.Empty : name;
 }
 
+async Task WriteNamespaceIndex(DocFxNamespace fxNamespace, DirectoryInfo output)
+{
+    List<DocFxFile> classes = new List<DocFxFile>();
+    List<DocFxFile> structs = new List<DocFxFile>();
+    List<DocFxFile> interfaces = new List<DocFxFile>();
+    List<DocFxFile> enums = new List<DocFxFile>();
+    List<DocFxFile> delegates = new List<DocFxFile>();
+
+    for (int i = 0; i < fxNamespace.References.Count; i++)
+    {
+        int index = i;
+        var type = types.Where(x => x.UId == fxNamespace.References[index].Id).FirstOrDefault();
+        if (type == null)
+        {
+            continue;
+        }
+
+        switch (type.Raw.Type)
+        {
+            case "Class":
+                classes.Add(type);
+                break;
+            case "Struct":
+                structs.Add(type);
+                break;
+            case "Interface":
+                interfaces.Add(type);
+                break;
+            case "Enum":
+                enums.Add(type);
+                break;
+            case "Delegate":
+                delegates.Add(type);
+                break;
+            default:
+                continue;
+        }
+    }
+    
+    classes.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+    structs.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+    interfaces.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+    enums.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+    delegates.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+    
+    var sb = new StringBuilder();
+
+    sb.AppendLine("---");
+    sb.AppendLine($"id: {fxNamespace.FullName}");
+    sb.AppendLine($"title: {fxNamespace.FullName}");
+    sb.AppendLine("---");
+    sb.AppendLine();
+    sb.AppendLine($"# {fxNamespace.FullName}");
+    sb.AppendLine();
+
+    await WriteType("Classes", sb, classes);
+    await WriteType("Structs", sb, structs);
+    await WriteType("Interfaces", sb, interfaces);
+    await WriteType("Enums", sb, enums);
+    await WriteType("Delegates", sb, delegates);
+
+    await File.WriteAllTextAsync(Path.Combine(output.FullName, fxNamespace.FullName, "index.md"), sb.ToString());
+
+    async Task WriteType(string type, StringBuilder builder, List<DocFxFile> files)
+    {
+        if (files.Count > 0)
+        {
+            builder.AppendLine($"## {type}");
+            builder.AppendLine();
+        
+            for (int i = 0; i < files.Count; i++)
+            {
+                builder.AppendLine($"#### [{StringUtil.FixGenericString(files[i].Name)}](./{files[i].Id.Replace("`", "-")})");
+                if (!string.IsNullOrWhiteSpace(files[i].Summary))
+                {
+                    var summary = Regex.Replace(files[i].Summary, @"<[^>]*>", string.Empty);
+
+                    builder.AppendLine($"> {summary}");
+                }
+            }
+        }
+    }
+}
+
 
 var rootCommand = new RootCommand("DocFxToMarkdown");
 
@@ -389,6 +473,12 @@ generateCommand.SetHandler(async (input, output) =>
 
         foreach (var type in types)
         {
+            if (type is DocFxNamespace fxNamespace)
+            {
+                await WriteNamespaceIndex(fxNamespace, output);
+                continue;
+            }
+            
             if (type is not IExportable exportable)
             {
                 Console.WriteLine("Skipping " + type.Name);
