@@ -4,7 +4,7 @@ branches:
     regex: ^master$|^main$
     mode: ContinuousDelivery
     tag: ''
-    increment: Patch
+    increment: Minor
     prevent-increment-of-merged-branch-version: true
     track-merge-target: false
     source-branches: [ 'develop', 'release' ]
@@ -16,7 +16,7 @@ branches:
     regex: ^dev(elop)?(ment)?$
     mode: ContinuousDeployment
     tag: alpha
-    increment: Minor
+    increment: Patch
     prevent-increment-of-merged-branch-version: false
     track-merge-target: true
     source-branches: []
@@ -24,18 +24,6 @@ branches:
     is-release-branch: false
     is-mainline: false
     pre-release-weight: 0
-  release:
-    regex: ^releases?[/-]
-    mode: ContinuousDelivery
-    tag: beta
-    increment: None
-    prevent-increment-of-merged-branch-version: true
-    track-merge-target: false
-    source-branches: [ 'develop', 'main', 'support', 'release' ]
-    tracks-release-branches: false
-    is-release-branch: true
-    is-mainline: false
-    pre-release-weight: 30000
   feature:
     regex: ^features?[/-]
     mode: ContinuousDelivery
