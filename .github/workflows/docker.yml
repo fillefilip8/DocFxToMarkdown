@@ -32,6 +32,6 @@ jobs:
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
       - name: Run './build.cmd BuildDocker'
-        run: ./build.cmd BuildDocker
+        run: ./build.cmd --verbosity verbose BuildDocker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
