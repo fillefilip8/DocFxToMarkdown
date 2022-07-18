@@ -69,7 +69,7 @@ class Build : NukeBuild
                     .SetPassword(GitHubActions.Token);
             });
             
-            var target = $"ghcr.io/{GitHubActions.Repository}:{Repository.Commit}";
+            var target = $"ghcr.io/{GitHubActions.Repository}:{Repository.Commit}".ToLower();
 
             DockerTasks.DockerImageTag(x => x
                 .SetSourceImage($"{ProjectName}:{Repository.Commit}")
