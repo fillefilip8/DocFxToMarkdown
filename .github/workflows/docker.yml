@@ -32,7 +32,7 @@ jobs:
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
       - name: Run gitversion
-        run: dotnet-gitversion
+        run: dotnet gitversion
       - name: Run './build.cmd BuildDocker'
         run: ./build.cmd --verbosity verbose
         env:
