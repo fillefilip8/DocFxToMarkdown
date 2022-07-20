@@ -33,8 +33,6 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      #- name: Run gitversion
-      #  run: dotnet tool install --global GitVersion.Tool --version 5.* && dotnet gitversion
       - name: Run './build.cmd BuildDocker'
         run: ./build.cmd BuildDocker
         env:

@@ -26,7 +26,6 @@ using LogLevel = Nuke.Common.LogLevel;
     "docker",
     GitHubActionsImage.UbuntuLatest,
     On = new[] { GitHubActionsTrigger.Push },
-    OnPushBranches = new []{ "master", "develop"},
     FetchDepth = 0,
     EnableGitHubToken = true,
     InvokedTargets = new[] { nameof(BuildDocker), })]
@@ -42,6 +41,11 @@ class Build : NukeBuild
     {
         Logging.Level = LogLevel.Trace;
         return Execute<Build>(x => x.BuildDocker);
+    }
+
+    public bool IsValidDeploymentBranch()
+    {
+        return Repository.IsOnMainOrMasterBranch() || Repository.IsOnDevelopBranch() || Repository.IsOnReleaseBranch();
     }
 
     [Nuke.Common.Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
@@ -75,7 +79,7 @@ class Build : NukeBuild
 
     Target DeployDocker => _ => _
         .TriggeredBy(BuildDocker)
-        .OnlyWhenDynamic(() => Configuration == Configuration.Release)
+        .OnlyWhenDynamic(() => Configuration == Configuration.Release && IsValidDeploymentBranch())
         .Executes(async () =>
         {
             DockerTasks.DockerLogin(settings =>
