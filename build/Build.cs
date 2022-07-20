@@ -26,6 +26,8 @@ using LogLevel = Nuke.Common.LogLevel;
     "docker",
     GitHubActionsImage.UbuntuLatest,
     On = new[] { GitHubActionsTrigger.Push },
+    OnPushBranches = new []{ "master", "develop"},
+    FetchDepth = 0,
     EnableGitHubToken = true,
     InvokedTargets = new[] { nameof(BuildDocker), })]
 class Build : NukeBuild
