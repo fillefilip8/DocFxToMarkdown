@@ -250,6 +250,11 @@ generateCommand.AddOption(outputDirOption);
 
 generateCommand.SetHandler(async (input, output) =>
     {
+        if (!Directory.Exists(output.FullName))
+        {
+            Directory.CreateDirectory(output.FullName);
+        }
+    
         Console.WriteLine("Input Folder: " + input);
         Console.WriteLine("Output Folder: " + output);
 
