@@ -293,6 +293,11 @@ async Task WriteNamespaceIndex(DocFxNamespace fxNamespace, DirectoryInfo output)
     await WriteType("Enums", sb, enums);
     await WriteType("Delegates", sb, delegates);
 
+    if (!Directory.Exists(Path.Combine(output.FullName, fxNamespace.FullName)))
+    {
+        Directory.CreateDirectory(Path.Combine(output.FullName, fxNamespace.FullName));
+    }
+
     await File.WriteAllTextAsync(Path.Combine(output.FullName, fxNamespace.FullName, "index.md"), sb.ToString());
 
     async Task WriteType(string type, StringBuilder builder, List<DocFxFile> files)
